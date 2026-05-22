@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import { withBase } from "../utils/paths";
+import GoogleAnalytics from "../components/GoogleAnalytics.astro";
 
 interface Props {
   title: string;
@@ -25,6 +26,7 @@ const fullTitle = title === "ツリナラ" ? title : `${title} | ツリナラ`;
       rel="stylesheet"
     />
     <title>{fullTitle}</title>
+    <GoogleAnalytics />
   </head>
   <body>
     <slot />
