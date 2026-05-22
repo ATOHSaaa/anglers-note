@@ -34,6 +34,14 @@ jobs:
         run: npm run build
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
+          SITE_URL: ${{ vars.SITE_URL }}
+
+      - name: Write CNAME for custom domain
+        if: vars.SITE_URL != ''
+        run: |
+          DOMAIN=$(echo "${{ vars.SITE_URL }}" | sed -E 's#^https?://##' | sed 's#/.*##')
+          echo "$DOMAIN" > dist/CNAME
+          echo "CNAME -> $DOMAIN"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
