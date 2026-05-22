@@ -1,0 +1,164 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import HomeSection from "../components/HomeSection.astro";
+import {
+  TAGS,
+  VISIBLE_CATEGORIES,
+  getArticlesByCategory,
+  getPublishedArticlesByTag,
+} from "../utils/articles";
+import { withBase } from "../utils/paths";
+
+const articlesByCategory = await getArticlesByCategory();
+
+const categorySections = VISIBLE_CATEGORIES.map((category) => ({
+  title: category.name,
+  href: withBase(`/categories/${category.slug}/`),
+  articles:
+    articlesByCategory.find(([name]) => name === category.name)?.[1].slice(0, 5) ?? [],
+}));
+
+const tagSections = await Promise.all(
+  TAGS.map(async (tag) => ({
+    title: tag.name,
+    href: withBase(`/tags/${tag.slug}/`),
+    articles: (await getPublishedArticlesByTag(tag.name)).slice(0, 5),
+  })),
+);
+---
+
+<SiteLayout title="ツリナラ" compactTop>
+  <div class="home-banners">
+    <a href={withBase("/about/")} class="home-banner">
+      <img
+        src={withBase("/images/home-about-banner.png")}
+        alt="ツリナラとは？ 私たちについてご紹介します！"
+        width="1024"
+        height="341"
+        loading="eager"
+        decoding="async"
+      />
+    </a>
+    <a href={withBase("/how-to-use/")} class="home-banner">
+      <img
+        src={withBase("/images/home-how-to-use-banner.png")}
+        alt="ツリナラの歩き方 サイトの使い方をご紹介します！"
+        width="1024"
+        height="341"
+        loading="eager"
+        decoding="async"
+      />
+    </a>
+  </div>
+
+  <div class="home">
+    <div class="home__group">
+      <h2 class="home__group-title">釣りの基本</h2>
+      <div class="home__sections home__sections--categories">
+        {
+          categorySections.map((section) => (
+            <HomeSection
+              title={section.title}
+              href={section.href}
+              articles={section.articles}
+              headingLevel={3}
+            />
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="home__group home__group--follow">
+      <h2 class="home__group-title">釣り方で探す</h2>
+      <div class="home__sections home__sections--tags">
+        {
+          tagSections.map((section) => (
+            <HomeSection
+              title={section.title}
+              href={section.href}
+              articles={section.articles}
+              headingLevel={3}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</SiteLayout>
+
+<style>
+  .home-banners {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-2xl);
+  }
+
+  .home-banner {
+    display: block;
+    border: 2px solid var(--color-text);
+    border-radius: 1.5rem;
+    overflow: hidden;
+    text-decoration: none;
+  }
+
+  .home-banner:hover {
+    text-decoration: none;
+  }
+
+  .home-banner img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .home {
+    width: 100%;
+  }
+
+  .home__sections {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2xl);
+  }
+
+  .home__group--follow {
+    margin-top: var(--space-2xl);
+  }
+
+  .home__sections--categories,
+  .home__sections--tags {
+    gap: var(--space-xl);
+  }
+
+  .home__group-title {
+    font-size: var(--text-4xl);
+    font-weight: 900;
+    line-height: 1.35;
+    letter-spacing: 0.1em;
+    font-feature-settings: "palt" 1;
+    color: var(--color-text);
+    margin: 0 0 var(--space-xl);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .home__group--follow .home__group-title {
+    border-top: 3px solid #000000;
+    padding-top: var(--space-xl);
+  }
+
+  @media (min-width: 768px) {
+    .home-banners {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .home__sections {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--space-xl);
+    }
+  }
+</style>

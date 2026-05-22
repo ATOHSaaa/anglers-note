@@ -1,0 +1,50 @@
+---
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
+import { searchArticles } from "../../utils/articles";
+
+const query = Astro.url.searchParams.get("q")?.trim() ?? "";
+const results = query ? await searchArticles(query) : [];
+const pageTitle = query ? `「${query}」の検索結果` : "記事を検索";
+---
+
+<SiteLayout title={pageTitle}>
+  <section class="search" aria-labelledby="search-heading">
+    <div class="section-header">
+      <h1 id="search-heading" class="section-header__title">
+        {query ? `「${query}」の検索結果` : "記事を検索"}
+      </h1>
+    </div>
+
+    {
+      query ? (
+        results.length > 0 ? (
+          <>
+            <p class="search__count">{results.length}件の記事が見つかりました</p>
+            <div class="article-list">
+              {results.map((article) => (
+                <ArticleCard article={article} />
+              ))}
+            </div>
+          </>
+        ) : (
+          <p class="article-list__empty">「{query}」に一致する記事は見つかりませんでした。</p>
+        )
+      ) : (
+        <p class="article-list__empty">キーワードを入力して記事を検索してください。</p>
+      )
+    }
+  </section>
+</SiteLayout>
+
+<style>
+  .search {
+    width: 100%;
+  }
+
+  .search__count {
+    margin: 0 0 var(--space-xl);
+    color: var(--color-text-muted);
+    font-size: 0.9375rem;
+  }
+</style>

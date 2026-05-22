@@ -1,0 +1,264 @@
+---
+import type { ArticlesByCategory } from "../utils/articles";
+import type { MarkdownHeading } from "astro";
+import { withBase } from "../utils/paths";
+
+interface Props {
+  articlesByCategory: ArticlesByCategory;
+  tocHeadings?: MarkdownHeading[];
+}
+
+const { articlesByCategory, tocHeadings = [] } = Astro.props;
+---
+
+<aside class="sidebar" aria-label="サイドナビゲーション">
+  <nav class="sidebar__nav">
+    {
+      tocHeadings.length > 0 && (
+        <section class="sidebar__section">
+          <h2 class="sidebar__heading sidebar__toc-title">目次</h2>
+          <ul class="sidebar__list sidebar__toc">
+            {tocHeadings.map((heading) => (
+              <li class:list={[{ "sidebar__toc-item--h3": heading.depth === 3 }]}>
+                <a
+                  href={`#${heading.slug}`}
+                  class="sidebar__link sidebar__toc-link"
+                  data-toc-slug={heading.slug}
+                >
+                  {heading.text}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      articlesByCategory.length > 0 && (
+        <div class="sidebar__recommended">
+          <span class="btn btn--dark sidebar__recommended-label">おすすめの記事</span>
+          {articlesByCategory.map(([category, articles]) => (
+            <section class="sidebar__section">
+              <h2 class="sidebar__heading">{category}</h2>
+              <ul class="sidebar__list sidebar__articles-list">
+                {articles.slice(0, 3).map((article) => {
+                  const href = withBase(`/articles/${article.slug}/`);
+                  return (
+                    <li>
+                      <a href={href} class="sidebar__link">
+                        {article.data.title}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
+        </div>
+      )
+    }
+  </nav>
+</aside>
+
+{tocHeadings.length > 0 && (
+  <script>
+    function initTocScrollSpy() {
+      const tocLinks = document.querySelectorAll(".sidebar__toc-link");
+      if (!tocLinks.length) return;
+
+      const headings = [];
+
+      tocLinks.forEach((link) => {
+        const id = link.getAttribute("data-toc-slug");
+        if (!id) return;
+        const heading = document.getElementById(id);
+        if (heading) headings.push(heading);
+      });
+
+      if (!headings.length) return;
+
+      function setActive(id) {
+        tocLinks.forEach((link) => {
+          const isCurrent = link.getAttribute("data-toc-slug") === id;
+          link.classList.toggle("sidebar__toc-link--current", isCurrent);
+        });
+      }
+
+      function getHeaderOffset() {
+        const header = document.querySelector(".header");
+        return header ? header.offsetHeight + 8 : 112;
+      }
+
+      function updateActive() {
+        const headerOffset = getHeaderOffset();
+        const nearBottom =
+          window.scrollY + window.innerHeight >=
+          document.documentElement.scrollHeight - 48;
+
+        if (nearBottom) {
+          setActive(headings[headings.length - 1].id);
+          return;
+        }
+
+        let currentId = headings[0].id;
+
+        for (const heading of headings) {
+          if (heading.getBoundingClientRect().top <= headerOffset) {
+            currentId = heading.id;
+          }
+        }
+
+        setActive(currentId);
+      }
+
+      window.addEventListener("scroll", updateActive, { passive: true });
+      window.addEventListener("resize", updateActive, { passive: true });
+      updateActive();
+    }
+
+    initTocScrollSpy();
+    document.addEventListener("astro:page-load", initTocScrollSpy);
+  </script>
+)}
+
+<style>
+  .sidebar {
+    display: none;
+  }
+
+  .sidebar__nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .sidebar__section {
+    margin: 0;
+  }
+
+  .sidebar__recommended {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .sidebar__recommended-label {
+    font-size: var(--text-base);
+    font-weight: 700;
+    padding: 0.625rem 1.25rem;
+    margin: 0;
+    align-self: flex-start;
+  }
+
+  .sidebar__heading {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--color-text);
+    margin: 0 0 var(--space-sm);
+    text-transform: none;
+  }
+
+  .sidebar__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sidebar__list li {
+    margin: 0;
+  }
+
+  .sidebar__articles-list {
+    list-style: disc;
+    padding-left: 1.125rem;
+  }
+
+  .sidebar__articles-list li::marker {
+    color: var(--color-text);
+  }
+
+  .sidebar__articles-list .sidebar__link {
+    padding-left: 0;
+  }
+
+  .sidebar__link {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--color-text);
+    text-decoration: none;
+    padding: 0.375rem var(--space-sm) 0.375rem 0;
+  }
+
+  .sidebar__link:hover {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .sidebar__toc-title {
+    color: var(--color-text);
+    font-weight: 900;
+    font-size: 1.5rem;
+    letter-spacing: 0;
+    margin-bottom: var(--space-sm);
+  }
+
+  .sidebar__toc {
+    list-style: disc;
+    margin-bottom: var(--space-xs);
+    padding-left: 1.125rem;
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .sidebar__toc li + li {
+    margin-top: var(--space-xs);
+  }
+
+  .sidebar__toc li::marker {
+    color: var(--color-text);
+  }
+
+  .sidebar__toc-link {
+    font-size: var(--text-sm);
+    line-height: 1.35;
+    padding: 0.125rem 0;
+  }
+
+  .sidebar__toc-item--h3 {
+    margin-left: var(--space-md);
+  }
+
+  .sidebar__toc-item--h3 .sidebar__toc-link {
+    font-size: var(--text-xs);
+  }
+
+  .sidebar__toc-link--current {
+    font-weight: 900;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.35em;
+    padding-bottom: 0.5rem;
+  }
+
+  .sidebar__toc-link--current:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+
+  @media (min-width: 1024px) {
+    .sidebar {
+      display: block;
+      width: var(--sidebar-width);
+      flex-shrink: 0;
+      position: sticky;
+      top: calc(var(--header-height) + var(--space-lg));
+      max-height: calc(100vh - var(--header-height) - var(--space-xl));
+      overflow-y: auto;
+      padding-left: var(--space-lg);
+      border-left: 1px solid var(--color-border);
+    }
+  }
+</style>

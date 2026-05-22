@@ -1,0 +1,31 @@
+---
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
+import { getPublishedArticles } from "../../utils/articles";
+
+const articles = await getPublishedArticles();
+---
+
+<SiteLayout title="記事一覧">
+  <section class="articles" aria-labelledby="articles-heading">
+    <div class="section-header">
+      <h1 id="articles-heading" class="section-header__title">記事一覧</h1>
+    </div>
+
+    {articles.length > 0 ? (
+      <div class="article-list">
+        {articles.map((article) => (
+          <ArticleCard article={article} />
+        ))}
+      </div>
+    ) : (
+      <p class="article-list__empty">記事はまだありません。</p>
+    )}
+  </section>
+</SiteLayout>
+
+<style>
+  .articles {
+    width: 100%;
+  }
+</style>

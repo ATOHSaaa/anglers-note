@@ -1,0 +1,75 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { withBase } from "../utils/paths";
+
+interface Props {
+  article: CollectionEntry<"articles">;
+  showMeta?: boolean;
+}
+
+const { article, showMeta = true } = Astro.props;
+const { title, pubDate, category } = article.data;
+const slug = article.slug;
+const formattedDate = pubDate.toLocaleDateString("ja-JP", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+---
+
+<article class="card">
+  <a href={withBase(`/articles/${slug}/`)} class="card__link" title={title}>
+    {showMeta && (
+      <div class="card__meta">
+        <span class="category-badge">{category}</span>
+        <time class="card__date" datetime={pubDate.toISOString()}>{formattedDate}</time>
+      </div>
+    )}
+    <h2 class="card__title">{title}</h2>
+  </a>
+</article>
+
+<style>
+  .card {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .card:last-child {
+    border-bottom: none;
+  }
+
+  .card__link {
+    display: block;
+    padding: var(--space-xl) 0;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .card__link:hover {
+    text-decoration: none;
+  }
+
+  .card__link:hover .card__title {
+    color: var(--color-text);
+  }
+
+  .card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm) var(--space-md);
+    margin-bottom: var(--space-md);
+  }
+
+  .card__date {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+
+  .card__title {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.4;
+  }
+</style>

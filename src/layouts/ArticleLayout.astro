@@ -1,0 +1,160 @@
+---
+import SiteLayout from "./SiteLayout.astro";
+import Sidebar from "../components/Sidebar.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import { getVisibleArticlesByCategory, getCategoryHref, getTagHref } from "../utils/articles";
+import { withBase } from "../utils/paths";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  article: CollectionEntry<"articles">;
+}
+
+const { article } = Astro.props;
+const { Content, headings } = await article.render();
+const tocHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+const articlesByCategory = await getVisibleArticlesByCategory();
+const { title, description, pubDate, updatedDate, category, tags } = article.data;
+const formattedDate = pubDate.toLocaleDateString("ja-JP", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+const formattedUpdated = updatedDate?.toLocaleDateString("ja-JP", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+---
+
+<SiteLayout title={title} description={description}>
+  <article class="article">
+    <Breadcrumbs
+      items={[
+        { label: "TOP", href: withBase("/") },
+        { label: category, href: getCategoryHref(category) },
+      ]}
+    />
+    <header class="article__header">
+      <div class="article__meta-row">
+        <span class="category-badge">{category}</span>
+        {tags.length > 0 && (
+          <ul class="article__tags">
+            {tags.map((tag) => {
+              const href = getTagHref(tag);
+              return (
+                <li>
+                  {href ? (
+                    <a href={href} class="tag">{tag}</a>
+                  ) : (
+                    <span class="tag">{tag}</span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        <div class="article__meta">
+          <time datetime={pubDate.toISOString()}>{formattedDate}</time>
+          {formattedUpdated && formattedUpdated !== formattedDate && (
+            <>
+              <span class="article__meta-sep">·</span>
+              <span>更新: {formattedUpdated}</span>
+            </>
+          )}
+        </div>
+      </div>
+      <h1 class="article__title">{title}</h1>
+    </header>
+    <div class="article__body prose">
+      <Content />
+    </div>
+  </article>
+
+  <Sidebar
+    slot="sidebar"
+    articlesByCategory={articlesByCategory}
+    tocHeadings={tocHeadings}
+  />
+</SiteLayout>
+
+<style>
+  .article {
+    max-width: var(--max-width-article);
+  }
+
+  .article__header {
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .article__title {
+    font-size: var(--text-3xl);
+    margin-bottom: 0;
+    line-height: 1.35;
+  }
+
+  .article__meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm) var(--space-md);
+    margin-bottom: var(--space-sm);
+  }
+
+  .article__meta-row :global(.category-badge) {
+    color: #ffffff;
+    background: var(--color-accent);
+    border: 1px solid var(--color-accent);
+    font-weight: 700;
+  }
+
+  .article__tags :global(.tag) {
+    color: var(--color-text);
+    background: var(--color-bg);
+    border: 1px solid var(--color-text);
+    font-weight: 600;
+  }
+
+  .article__tags :global(a.tag:hover) {
+    color: var(--color-text);
+    border-color: var(--color-text);
+  }
+
+  .article__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+  }
+
+  .article__meta-sep {
+    margin: 0 0.375rem;
+  }
+
+  .article__tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-xs) var(--space-md);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .article__tags li {
+    margin: 0;
+  }
+
+  .article__body {
+    padding-top: var(--space-sm);
+  }
+
+  @media (min-width: 640px) {
+    .article__title {
+      font-size: 2.125rem;
+    }
+  }
+</style>

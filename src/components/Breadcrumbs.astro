@@ -1,0 +1,111 @@
+---
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+interface Props {
+  items: BreadcrumbItem[];
+}
+
+const { items } = Astro.props;
+const siteOrigin = Astro.site ?? Astro.url.origin;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: items.map((item, index) => {
+    const entry: Record<string, unknown> = {
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.label,
+    };
+
+    if (item.href) {
+      entry.item = new URL(item.href, siteOrigin).href;
+    } else if (index === items.length - 1) {
+      entry.item = Astro.url.href;
+    }
+
+    return entry;
+  }),
+};
+---
+
+<nav class="breadcrumbs" aria-label="パンくずリスト">
+  <ol class="breadcrumbs__list">
+    {
+      items.map((item, index) => (
+        <li class="breadcrumbs__item">
+          {item.href ? (
+            <a href={item.href} class="breadcrumbs__link">
+              {item.label}
+            </a>
+          ) : (
+            <span class="breadcrumbs__current" aria-current="page">
+              {item.label}
+            </span>
+          )}
+          {index < items.length - 1 && (
+            <span class="breadcrumbs__sep" aria-hidden="true">›</span>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+<style>
+  .breadcrumbs {
+    margin-bottom: var(--space-md);
+  }
+
+  .breadcrumbs__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .breadcrumbs__item {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .breadcrumbs__link,
+  .breadcrumbs__current {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .breadcrumbs__link {
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+
+  .breadcrumbs__link:hover {
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+
+  .breadcrumbs__current {
+    color: var(--color-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .breadcrumbs__sep {
+    margin: 0 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    user-select: none;
+  }
+</style>

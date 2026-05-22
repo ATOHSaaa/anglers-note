@@ -1,0 +1,47 @@
+---
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
+import {
+  getArticlesByCategory,
+  getCategoryBySlug,
+  getCategorySlugs,
+} from "../../utils/articles";
+
+export async function getStaticPaths() {
+  return getCategorySlugs().map((slug) => ({ params: { slug } }));
+}
+
+const { slug } = Astro.params;
+const category = getCategoryBySlug(slug!);
+
+if (!category) {
+  return Astro.redirect("/");
+}
+
+const articlesByCategory = await getArticlesByCategory();
+const articles = articlesByCategory.find(([name]) => name === category.name)?.[1] ?? [];
+---
+
+<SiteLayout title={category.name}>
+  <section class="articles" aria-labelledby="articles-heading">
+    <div class="section-header">
+      <h1 id="articles-heading" class="section-header__title">{category.name}</h1>
+    </div>
+
+    {articles.length > 0 ? (
+      <div class="article-list">
+        {articles.map((article) => (
+          <ArticleCard article={article} />
+        ))}
+      </div>
+    ) : (
+      <p class="article-list__empty">記事はまだありません。</p>
+    )}
+  </section>
+</SiteLayout>
+
+<style>
+  .articles {
+    width: 100%;
+  }
+</style>

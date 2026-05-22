@@ -1,0 +1,57 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+  compactTop?: boolean;
+}
+
+const { title, description, compactTop = false } = Astro.props;
+const hasSidebar = Astro.slots.has("sidebar");
+---
+
+<BaseLayout title={title} description={description}>
+  <Header />
+  <div class:list={["site-body", "container", { "site-body--with-sidebar": hasSidebar, "site-body--compact-top": compactTop }]}>
+    <div class="site-content">
+      <slot />
+    </div>
+    <slot name="sidebar" />
+  </div>
+  <Footer />
+</BaseLayout>
+
+<style>
+  .site-body {
+    display: flex;
+    flex: 1;
+    gap: var(--space-2xl);
+    align-items: flex-start;
+    padding-top: var(--space-2xl);
+    padding-bottom: var(--space-2xl);
+  }
+
+  .site-body--compact-top {
+    padding-top: var(--space-lg);
+  }
+
+  .site-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .site-body--with-sidebar .site-content {
+    max-width: var(--max-width-article);
+  }
+
+  .site-body--with-sidebar.container {
+    padding-right: 0;
+  }
+
+  .site-body:not(.site-body--with-sidebar) .site-content {
+    max-width: none;
+  }
+</style>

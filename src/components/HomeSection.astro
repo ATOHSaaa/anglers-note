@@ -1,0 +1,135 @@
+---
+import type { CollectionEntry } from "astro:content";
+import ArticleCard from "./ArticleCard.astro";
+
+interface Props {
+  title: string;
+  href: string;
+  articles: CollectionEntry<"articles">[];
+  linkTitle?: boolean;
+  headingLevel?: 2 | 3;
+}
+
+const { title, href, articles, linkTitle = true, headingLevel = 2 } = Astro.props;
+const HeadingTag = headingLevel === 3 ? "h3" : "h2";
+---
+
+<section class:list={["home-section", headingLevel === 3 && "home-section--sub"]}>
+  <div class="section-heading">
+    <HeadingTag class="section-heading__title" title={title}>
+      {linkTitle ? (
+        <a href={href} title={title}>{title}</a>
+      ) : (
+        title
+      )}
+    </HeadingTag>
+  </div>
+
+  {articles.length > 0 ? (
+    <>
+      <div class="home-section__list">
+        {articles.map((article) => (
+          <ArticleCard article={article} showMeta={false} />
+        ))}
+      </div>
+      <p class="home-section__more">
+        <a href={href} class="btn btn--dark home-section__more-btn">もっと読む</a>
+      </p>
+    </>
+  ) : (
+    <>
+      <p class="home-section__empty">記事はまだありません。</p>
+      <p class="home-section__more">
+        <a href={href} class="btn btn--dark home-section__more-btn">もっと読む</a>
+      </p>
+    </>
+  )}
+</section>
+
+<style>
+  .home-section {
+    padding-bottom: var(--space-2xl);
+    min-width: 0;
+  }
+
+  .home-section:last-child {
+    padding-bottom: 0;
+  }
+
+  .section-heading {
+    margin-bottom: var(--space-md);
+    min-width: 0;
+  }
+
+  .section-heading__title {
+    font-size: var(--text-2xl);
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    font-feature-settings: "palt" 1;
+    margin-top: var(--space-2xl);
+    margin-bottom: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .home-section--sub .section-heading__title {
+    margin-top: var(--space-md);
+  }
+
+  .section-heading__title a {
+    letter-spacing: inherit;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .section-heading__title a:hover {
+    color: var(--color-text);
+  }
+
+  .home-section__list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .home-section__list :global(.card) {
+    border-bottom: none;
+    min-width: 0;
+  }
+
+  .home-section__list :global(.card__link) {
+    padding: var(--space-md) 0;
+    min-width: 0;
+  }
+
+  .home-section__list :global(.card__title) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .home-section__list :global(.card__link:hover),
+  .home-section__list :global(.card__link:hover .card__title) {
+    color: var(--color-text);
+  }
+
+  .home-section__empty {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    margin: var(--space-md) 0 0;
+  }
+
+  .home-section__more {
+    margin: var(--space-xl) 0 0;
+    text-align: center;
+  }
+
+  .home-section__more-btn {
+    font-size: 0.9375rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    padding: 0.625rem 1.25rem;
+  }
+</style>

@@ -1,0 +1,19 @@
+{
+  "name": "tsurinara",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "images": "node scripts/optimize-images.mjs",
+    "predev": "npm run images",
+    "prebuild": "npm run images"
+  },
+  "dependencies": {
+    "astro": "^4.16.19"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.5"
+  }
+}

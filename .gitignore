@@ -1,0 +1,25 @@
+# build output
+dist/
+.astro/
+
+# generated article images (source: content/articles/{slug}/images/)
+public/articles/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+
+# environment
+.env
+.env.production
+
+# macOS
+.DS_Store
+
+# python venv
+.venv/
+
+# internal docs (not for GitHub)
+docs/
